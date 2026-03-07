@@ -1,0 +1,15 @@
+@media (max-width:768px){
+
+.dashboard{
+flex-direction:column;
+}
+
+.patientCards{
+grid-template-columns:1fr;
+}
+
+#map{
+height:300px;
+}
+
+}
