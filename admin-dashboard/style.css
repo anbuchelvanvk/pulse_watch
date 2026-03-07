@@ -1,0 +1,72 @@
+body {
+    font-family: Segoe UI;
+    background: #0f172a;
+    color: white;
+    margin: 0;
+}
+
+.container {
+    width: 90%;
+    margin: auto;
+    padding: 40px;
+}
+
+h1 {
+    margin-bottom: 30px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #1e293b;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+th,
+td {
+    padding: 14px;
+    text-align: center;
+}
+
+th {
+    background: #334155;
+}
+
+tr:nth-child(even) {
+    background: #273549;
+}
+
+a {
+    color: #38bdf8;
+    text-decoration: none;
+    font-weight: bold;
+}
+.dashboard{
+display:flex;
+gap:20px;
+}
+
+.patientCards{
+display:grid;
+grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+gap:20px;
+flex:2;
+}
+
+.card{
+background:#1e293b;
+padding:20px;
+border-radius:10px;
+}
+
+.card.critical{
+animation:flash 1s infinite;
+border:2px solid red;
+}
+
+@keyframes flash{
+0%{box-shadow:0 0 10px red;}
+50%{box-shadow:0 0 30px red;}
+100%{box-shadow:0 0 10px red;}
+}

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>PulseWatch Admin</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="mobile.css">
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>Patient Monitoring Dashboard</h1>
+
+        <table id="patientTable">
+
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Location</th>
+                    <th>Heart Rate</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody id="patients"></tbody>
+
+        </table>
+        <div class="dashboard">
+
+            <div class="patientCards" id="cards"></div>
+
+            <div class="notifications">
+
+                <h3>Alerts</h3>
+                <ul id="alertList"></ul>
+
+            </div>
+
+        </div>
+
+        <div id="map"></div>
+
+    </div>
+
+    <audio id="alarm" src="alarm.mp3"></audio>
+
+    <script src="app.js"></script>
+
+</body>
+
+</html>
