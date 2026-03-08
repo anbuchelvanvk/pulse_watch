@@ -1,60 +1,110 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-    <title>PulseWatch Admin</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <link rel="stylesheet" href="mobile.css">
-
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PulseWatch - Admin Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles.css">
 </head>
-
 <body>
-
-    <div class="container">
-
-        <h1>Patient Monitoring Dashboard</h1>
-
-        <table id="patientTable">
-
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Location</th>
-                    <th>Heart Rate</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-
-            <tbody id="patients"></tbody>
-
-        </table>
-        <div class="dashboard">
-
-            <div class="patientCards" id="cards"></div>
-
-            <div class="notifications">
-
-                <h3>Alerts</h3>
-                <ul id="alertList"></ul>
-
+    <div class="dashboard-container">
+        <!-- Header Section -->
+        <header class="dashboard-header">
+            <div class="header-left">
+                <div class="logo-box">
+                    <!-- Simple CSS heart icon -->
+                    <div class="heart-icon"></div>
+                </div>
+                <div>
+                    <h1>PulseWatch Dashboard</h1>
+                    <p class="subtitle">Live User Heart Monitoring</p>
+                </div>
             </div>
+            <div class="header-right">
+                <div class="status-indicator">
+                    <span class="status-dot pulsing"></span>
+                    <span class="status-text">System Active • Listening for live data</span>
+                </div>
+            </div>
+        </header>
 
-        </div>
+        <!-- Stats Overview Row -->
+        <section class="stats-row">
+            <div class="stat-card">
+                <div class="stat-icon users-icon"></div>
+                <div class="stat-content">
+                    <p class="stat-label">Total Unique Users</p>
+                    <h2 class="stat-value" id="totalUsersCount">0</h2>
+                </div>
+            </div>
+            <div class="stat-card active-readings">
+                <div class="stat-icon pulse-icon"></div>
+                <div class="stat-content">
+                    <p class="stat-label">Total Readings Logged</p>
+                    <h2 class="stat-value" id="totalReadingsCount">0</h2>
+                </div>
+            </div>
+            <div class="stat-card alert-card">
+                <div class="stat-icon alert-icon"></div>
+                <div class="stat-content">
+                    <p class="stat-label">Abnormal Flags</p>
+                    <h2 class="stat-value text-red" id="alertsCount">0</h2>
+                </div>
+            </div>
+        </section>
 
-        <div id="map"></div>
-
+        <!-- Main Content Area -->
+        <main class="dashboard-content">
+            <!-- Live Event Log -->
+            <div class="panel live-readings">
+                <div class="panel-header" style="justify-content: space-between; display: flex; align-items: center; width: 100%;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <h2>Live HR Telemetry</h2>
+                    </div>
+                    
+                    <div class="view-toggle" style="display: flex; background: rgba(255,255,255,0.05); padding: 4px; border-radius: 8px;">
+                        <input type="radio" id="viewLive" name="viewMode" value="live" checked style="display: none;">
+                        <label for="viewLive" id="lblLive" style="padding: 6px 16px; font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 6px; transition: 0.2s; background: var(--accent); color: #000;">Live Patients</label>
+                        
+                        <input type="radio" id="viewLog" name="viewMode" value="log" style="display: none;">
+                        <label for="viewLog" id="lblLog" style="padding: 6px 16px; font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 6px; transition: 0.2s; color: var(--text-muted);">Raw History Log</label>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Patient Name</th>
+                                <th>Location (Lat,Lng)</th>
+                                <th>Heart Rate (BPM)</th>
+                                <th>Status</th>
+                                <th>Recent History</th>
+                            </tr>
+                        </thead>
+                        <tbody id="readingsTableBody">
+                            <!-- Data injected via JS -->
+                            <tr class="empty-state" id="emptyRow">
+                                <td colspan="7">Loading data from sensors...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
     </div>
 
-    <audio id="alarm" src="alarm.mp3"></audio>
+    <!-- Firebase SDK (v9 Compat for simpler direct script implementation) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Alarm Audio Preload -->
+    <audio id="alarmAudio" src="https://assets.mixkit.co/active_storage/sfx/933/933-preview.mp3" preload="auto"></audio>
 
+    <!-- Application Logic -->
     <script src="app.js"></script>
-
 </body>
-
 </html>

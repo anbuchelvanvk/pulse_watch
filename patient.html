@@ -1,47 +1,227 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-
-    <title>Patient Data</title>
-
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="mobile.css">
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Details - PulseWatch</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
-
+    <link rel="stylesheet" href="styles.css">
 </head>
-
 <body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header class="dashboard-header" style="margin-bottom: 20px;">
+            <div class="header-left">
+                <div class="logo-box">
+                    <div class="heart-icon"></div>
+                </div>
+                <div>
+                    <h1>Patient Report</h1>
+                    <div class="subtitle">Detailed heart rate analysis</div>
+                </div>
+            </div>
+            
+            <a href="index.html" style="color: var(--text-muted); text-decoration: none; display: flex; align-items: center; gap: 8px; font-weight: 600; padding: 10px 20px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-card); transition: all 0.2s;">
+                <span>&larr;</span> Back to Dashboard
+            </a>
+        </header>
 
-    <div class="container">
+        <!-- Main Content Panel -->
+        <main class="panel" style="padding: 32px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--border);">
+                <div>
+                    <h2 id="pagePatientName" style="font-size: 32px; color: var(--text-primary); margin-bottom: 8px;">Loading Patient...</h2>
+                    <div id="pageUserId" style="color: var(--text-muted); font-family: monospace;">ID: --</div>
+                </div>
+                
+                <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 12px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span id="pageStatus" class="chip chip-abnormal" style="font-size: 14px; padding: 8px 16px;">⚠️ Critical</span>
+                        <button id="assignDoctorBtn" style="display: none; background-color: var(--accent); color: #000; border: none; padding: 8px 16px; border-radius: var(--radius-sm); font-weight: 700; cursor: pointer; transition: opacity 0.2s;">
+                            + Assign Doctor
+                        </button>
+                    </div>
+                    <div id="pageTime" style="color: var(--text-muted); font-size: 14px; font-weight: 600;">--</div>
+                </div>
+            </div>
 
-        <h2 id="patientName"></h2>
+            <!-- Info Grid -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 40px;">
+                <div style="background-color: var(--bg-accent); border: 1px solid rgba(0, 240, 255, 0.2); padding: 24px; border-radius: var(--radius-lg); display: flex; align-items: center; gap: 16px;">
+                    <span style="font-size: 32px;">&#128205;</span>
+                    <div>
+                        <div style="font-size: 13px; color: var(--accent); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Last Known Coordinates</div>
+                        <a id="pageLocationLink" href="#" target="_blank" style="color: white; text-decoration: none; font-size: 18px; font-weight: 700;">
+                            Loading coordinates...
+                        </a>
+                    </div>
+                </div>
 
-        <canvas id="chart"></canvas>
+                <div style="background-color: rgba(0,0,0,0.2); border: 1px solid var(--border); padding: 24px; border-radius: var(--radius-lg); display: flex; align-items: center; gap: 16px;">
+                    <span style="font-size: 32px;">❤️</span>
+                    <div>
+                        <div style="font-size: 13px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Peak Heart Rate Identified</div>
+                        <div id="pagePeakBpm" style="color: var(--danger); font-size: 24px; font-weight: 700; font-family: monospace;">-- BPM</div>
+                    </div>
+                </div>
+            </div>
 
-        <table id="history">
-
-            <thead>
-                <tr>
-                    <th>Time</th>
-                    <th>BPM</th>
-                </tr>
-            </thead>
-
-            <tbody id="records"></tbody>
-
-        </table>
-
+            <!-- Chart -->
+            <div>
+                <h3 style="font-size: 20px; font-weight: 600; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                    <span style="color: var(--accent);">⬩</span> Recent Telemetry Graph
+                </h3>
+                <div style="height: 400px; width: 100%; position: relative; background-color: rgba(0,0,0,0.2); border-radius: var(--radius-lg); padding: 24px; border: 1px solid rgba(255,255,255,0.05);">
+                    <canvas id="detailsChart"></canvas>
+                </div>
+            </div>
+        </main>
     </div>
 
-    <audio id="alarm" src="alarm.mp3"></audio>
+    <!-- Firebase SDK Setup -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
-    <script src="patient.js"></script>
+    <script>
+        // 1. Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyCOEeYfiYHm8QWvq4g9OVL6fMjGwhokYjU",
+            authDomain: "pulsewatch-baac1.firebaseapp.com",
+            projectId: "pulsewatch-baac1",
+            storageBucket: "pulsewatch-baac1.firebasestorage.app",
+            messagingSenderId: "839217399482",
+            appId: "1:839217399482:web:2f04360b06937687812483",
+            measurementId: "G-XQX1VE443L"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
+        // 2. Parse URL Parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        const b64Data = urlParams.get('data');
+        if (!b64Data) {
+            document.getElementById('pagePatientName').innerText = "Error: No patient data provided.";
+        } else {
+            try {
+                // Decode from base64 JSON
+                const rawJson = atob(decodeURIComponent(b64Data));
+                const patient = JSON.parse(rawJson);
+                
+                // 2. Populate UI
+                document.getElementById('pagePatientName').innerText = patient.name;
+                document.getElementById('pageUserId').innerText = `ID: ${patient.id}`;
+                document.getElementById('pageTime').innerText = `Recorded: ${patient.time}`;
+                document.getElementById('pagePeakBpm').innerText = `${patient.hr} BPM`;
+                
+                const locLink = document.getElementById('pageLocationLink');
+                if (patient.lat !== 'N/A' && patient.lng !== 'N/A') {
+                    locLink.innerText = `${patient.lat}, ${patient.lng}`;
+                    locLink.href = `https://www.google.com/maps/search/?api=1&query=${patient.lat},${patient.lng}`;
+                } else {
+                    locLink.innerText = "Location Unavailable";
+                    locLink.removeAttribute('href');
+                }
+
+                // 3. Status Button UI Update
+                const pageStatus = document.getElementById('pageStatus');
+                const assignBtn = document.getElementById('assignDoctorBtn');
+                
+                if (patient.isAssigned) {
+                    pageStatus.innerText = "✓ Doctor Assigned";
+                    pageStatus.className = "chip chip-normal";
+                    assignBtn.style.display = 'none';
+                } else {
+                    pageStatus.innerText = "⚠️ Critical Warning";
+                    pageStatus.className = "chip chip-abnormal";
+                    assignBtn.style.display = 'block';
+                    
+                    // Wire up Firebase Update
+                    assignBtn.addEventListener('click', async () => {
+                        assignBtn.innerText = "Assigning...";
+                        assignBtn.disabled = true;
+                        try {
+                            // Update the precise document ID flag 
+                            await db.collection("heart_rate_readings").doc(patient.docId).update({
+                                isAssigned: true
+                            });
+                            
+                            // Visual change on this page
+                            pageStatus.innerText = "✓ Doctor Assigned";
+                            pageStatus.className = "chip chip-normal";
+                            assignBtn.style.display = 'none';
+                            
+                        } catch (err) {
+                            console.error("Error updating assignment", err);
+                            assignBtn.innerText = "Error - Try again";
+                            assignBtn.disabled = false;
+                        }
+                    });
+                }
+
+                // 4. Render Chart
+                const chartData = [...patient.history, patient.hr];
+                const labels = chartData.map((_, i) => i === chartData.length - 1 ? 'Pulse Trigger' : `T-${chartData.length - 1 - i}`);
+                
+                const ctx = document.getElementById('detailsChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Heart Rate (BPM)',
+                            data: chartData,
+                            borderColor: '#FF3366',
+                            backgroundColor: 'rgba(255, 51, 102, 0.1)',
+                            borderWidth: 4,
+                            pointBackgroundColor: '#FF3366',
+                            pointBorderColor: '#0B1120',
+                            pointBorderWidth: 2,
+                            pointRadius: 6,
+                            pointHoverRadius: 8,
+                            fill: true,
+                            tension: 0.3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false,
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: false,
+                                suggestedMin: 40,
+                                suggestedMax: 120,
+                                grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                                ticks: { color: '#94A3B8', font: { family: 'monospace', size: 14 } }
+                            },
+                            x: {
+                                grid: { display: false },
+                                ticks: { color: '#94A3B8', font: { weight: 'bold' } }
+                            }
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: 'rgba(30, 41, 59, 0.9)',
+                                titleFont: { size: 14 },
+                                bodyFont: { size: 16, weight: 'bold', family: 'monospace' },
+                                padding: 12,
+                                displayColors: false
+                            }
+                        }
+                    }
+                });
+
+            } catch (e) {
+                console.error(e);
+                document.getElementById('pagePatientName').innerText = "Error parsing patient data.";
+            }
+        }
+    </script>
 </body>
-
 </html>
